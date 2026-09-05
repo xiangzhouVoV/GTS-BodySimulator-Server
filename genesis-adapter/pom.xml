@@ -3,29 +3,31 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.vov</groupId>
-        <artifactId>genesis</artifactId>
+        <groupId>com.sean</groupId>
+        <artifactId>body-simulator</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>genesis-adapter</artifactId>
+    <artifactId>body-simulator-adapter</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>com.vov</groupId>
-            <artifactId>genesis-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.vov</groupId>
-            <artifactId>genesis-domain</artifactId>
+            <groupId>com.sean</groupId>
+            <artifactId>body-simulator-application</artifactId>
         </dependency>
 
         <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Validate Supabase-issued Bearer JWTs as an OAuth2 Resource Server. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
         </dependency>
     </dependencies>
 </project>

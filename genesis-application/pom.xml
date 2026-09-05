@@ -9,7 +9,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>body-simulator-infrastructure</artifactId>
+    <artifactId>body-simulator-application</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -17,16 +17,9 @@
             <groupId>com.sean</groupId>
             <artifactId>body-simulator-domain</artifactId>
         </dependency>
-
-        <!-- Database -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jdbc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
+            <groupId>com.sean</groupId>
+            <artifactId>body-simulator-infrastructure</artifactId>
         </dependency>
 
         <!-- Spring Boot -->

@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.vov</groupId>
-    <artifactId>genesis</artifactId>
+    <groupId>com.sean</groupId>
+    <artifactId>body-simulator</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
     <name>genesis</name>
@@ -14,6 +14,7 @@
         <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>3.2.4</spring-boot.version>
+        <postgresql.version>42.7.13</postgresql.version>
     </properties>
 
     <dependencyManagement>
@@ -28,23 +29,23 @@
 
             <!-- 内部模块 -->
             <dependency>
-                <groupId>com.vov</groupId>
-                <artifactId>genesis-client</artifactId>
+                <groupId>com.sean</groupId>
+                <artifactId>body-simulator-adapter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.vov</groupId>
-                <artifactId>genesis-adapter</artifactId>
+                <groupId>com.sean</groupId>
+                <artifactId>body-simulator-application</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.vov</groupId>
-                <artifactId>genesis-domain</artifactId>
+                <groupId>com.sean</groupId>
+                <artifactId>body-simulator-domain</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.vov</groupId>
-                <artifactId>genesis-infrastructure</artifactId>
+                <groupId>com.sean</groupId>
+                <artifactId>body-simulator-infrastructure</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
@@ -74,8 +75,8 @@
     </build>
 
     <modules>
-        <module>genesis-client</module>
         <module>genesis-adapter</module>
+        <module>genesis-application</module>
         <module>genesis-domain</module>
         <module>genesis-infrastructure</module>
         <module>start</module>

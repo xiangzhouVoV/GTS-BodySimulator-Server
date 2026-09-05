@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: body-simulator
+  profiles:
+    active: dev
+  datasource:
+    # Prefer SUPABASE_DB_URL (use the Supabase pooler URL in production).
+    # POSTGRES_* names remain supported for local/backward-compatible deploys.
+    url: "${SUPABASE_DB_URL:jdbc:postgresql://${SUPABASE_DB_HOST:${POSTGRES_HOST:localhost}}:${SUPABASE_DB_PORT:${POSTGRES_PORT:5432}}/${SUPABASE_DB_NAME:${POSTGRES_DATABASE:postgres}}?sslmode=${SUPABASE_DB_SSLMODE:require}}"
+    username: "${SUPABASE_DB_USERNAME:${POSTGRES_USERNAME:postgres}}"
+    password: "${SUPABASE_DB_PASSWORD:${POSTGRES_PASSWORD:}}"
+    driver-class-name: org.postgresql.Driver
+
+server:
+  port: 8089
+  servlet:
+    context-path: /
+
+# Supabase Auth is the identity provider. The API only validates its access
+# tokens; the private/service-role key must never be configured here.
+security:
+  supabase:
+    issuer-uri: "${SUPABASE_ISSUER_URI:}"
+    jwk-set-uri: "${SUPABASE_JWK_SET_URI:}"
+    # Only needed for projects still using the legacy HS256 signing secret.
+    jwt-secret: "${SUPABASE_JWT_SECRET:}"
+    audience: "${SUPABASE_JWT_AUDIENCE:authenticated}"
