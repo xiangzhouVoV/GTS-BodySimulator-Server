@@ -20,8 +20,10 @@ server:
 # tokens; the private/service-role key must never be configured here.
 security:
   supabase:
-    issuer-uri: "${SUPABASE_ISSUER_URI:}"
-    jwk-set-uri: "${SUPABASE_JWK_SET_URI:}"
+    # REST endpoint used when a future adapter needs to call Supabase PostgREST.
+    api-url: "${SUPABASE_API_URL:https://csvmlhpsxfepglbdkhcq.supabase.co/rest/v1}"
+    issuer-uri: "${SUPABASE_ISSUER_URI:https://csvmlhpsxfepglbdkhcq.supabase.co/auth/v1}"
+    jwk-set-uri: "${SUPABASE_JWK_SET_URI:https://csvmlhpsxfepglbdkhcq.supabase.co/auth/v1/.well-known/jwks.json}"
     # Only needed for projects still using the legacy HS256 signing secret.
     jwt-secret: "${SUPABASE_JWT_SECRET:}"
     audience: "${SUPABASE_JWT_AUDIENCE:authenticated}"
