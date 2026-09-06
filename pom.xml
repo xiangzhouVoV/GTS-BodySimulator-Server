@@ -75,10 +75,10 @@
     </build>
 
     <modules>
-        <module>genesis-adapter</module>
-        <module>genesis-application</module>
-        <module>genesis-domain</module>
-        <module>genesis-infrastructure</module>
-        <module>start</module>
+        <module>body-simulator-adapter</module>
+        <module>body-simulator-application</module>
+        <module>body-simulator-domain</module>
+        <module>body-simulator-infrastructure</module>
+        <module>body-simulator-start</module>
     </modules>
 </project>
