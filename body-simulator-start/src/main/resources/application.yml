@@ -4,12 +4,27 @@ spring:
   profiles:
     active: dev
   datasource:
-    # Prefer SUPABASE_DB_URL (use the Supabase pooler URL in production).
-    # POSTGRES_* names remain supported for local/backward-compatible deploys.
-    url: "${SUPABASE_DB_URL:jdbc:postgresql://${SUPABASE_DB_HOST:${POSTGRES_HOST:localhost}}:${SUPABASE_DB_PORT:${POSTGRES_PORT:5432}}/${SUPABASE_DB_NAME:${POSTGRES_DATABASE:postgres}}?sslmode=${SUPABASE_DB_SSLMODE:require}}"
-    username: "${SUPABASE_DB_USERNAME:${POSTGRES_USERNAME:postgres}}"
-    password: "${SUPABASE_DB_PASSWORD:${POSTGRES_PASSWORD:}}"
+    # All database settings are injected through JVM system properties (-D...)
+    # or environment variables. No connection-specific values are committed.
+    url: "jdbc:postgresql://${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}?sslmode=${SUPABASE_DB_SSLMODE}"
+    username: "${SUPABASE_DB_USERNAME}"
+    password: "${SUPABASE_DB_PASSWORD}"
     driver-class-name: org.postgresql.Driver
+    hikari:
+      # Keep pooled connections shorter than the Supabase Pooler/server limit.
+      max-lifetime: 300000
+      keepalive-time: 120000
+      validation-timeout: 5000
+      connection-timeout: 30000
+  flyway:
+    # Schema is provisioned already; do not create or alter tables on service startup.
+    enabled: false
+    # If migrations are explicitly enabled in a provisioning profile, baseline
+    # at version 0 so the application's V1 migration is still executed.
+    baseline-on-migrate: true
+    baseline-version: 0
+    default-schema: public
+    schemas: public
 
 server:
   port: 8089

@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>com.sean</groupId>
-            <artifactId>body-simulator-application</artifactId>
+            <artifactId>body-simulator-domain</artifactId>
         </dependency>
 
         <!-- Spring Boot Web -->

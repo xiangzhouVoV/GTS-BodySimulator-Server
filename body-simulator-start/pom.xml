@@ -18,6 +18,10 @@
             <groupId>com.sean</groupId>
             <artifactId>body-simulator-adapter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sean</groupId>
+            <artifactId>body-simulator-infrastructure</artifactId>
+        </dependency>
         <!-- Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

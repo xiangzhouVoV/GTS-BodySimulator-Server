@@ -44,9 +44,8 @@ public class SupabaseSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(request -> "OPTIONS".equalsIgnoreCase(request.getMethod())).permitAll()
                         .requestMatchers("/actuator/health", "/error").permitAll()
-                        .anyRequest().authenticated())
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+                        // Temporary local development mode: all API endpoints are public.
+                        .anyRequest().permitAll());
         return http.build();
     }
 
