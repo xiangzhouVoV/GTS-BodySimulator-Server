@@ -1,0 +1,9 @@
+.git
+.idea
+.agents
+.codex
+.next
+node_modules
+*.log
+.env
+.env.*
