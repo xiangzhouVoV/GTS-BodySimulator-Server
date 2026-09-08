@@ -4,7 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.time.OffsetDateTime;
 
 /** Maps the public.countries table. */
 @Entity
@@ -32,10 +31,6 @@ public class CountryEntity {
     /** 是否在国家选择器和公开接口中展示。 */
     private boolean active = true;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    /** 记录创建时间（UTC）。 */
-    private OffsetDateTime createdAt;
-
     protected CountryEntity() {
         // Required by JPA.
     }
@@ -52,5 +47,4 @@ public class CountryEntity {
     public String getNameLocal() { return nameLocal; }
     public String getLocale() { return locale; }
     public boolean isActive() { return active; }
-    public OffsetDateTime getCreatedAt() { return createdAt; }
 }

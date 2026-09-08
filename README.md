@@ -41,3 +41,21 @@ The endpoint returns each nutrient as a daily grams range:
   "fatG": {"min": 72.3, "max": 72.3}
 }
 ```
+
+## Countries API
+
+`GET /api/countries` returns all active countries in English-name order. Each
+record includes a derived SVG country-flag URL; flag image files are not stored
+in the database.
+
+```json
+[
+  {
+    "code": "CN",
+    "nameEn": "China",
+    "nameLocal": "中国",
+    "locale": "zh-CN",
+    "flagUrl": "https://flagcdn.com/cn.svg"
+  }
+]
+```

@@ -3,11 +3,15 @@ package com.sean.adapter.api;
 import com.sean.domain.macro.DailyMacroTarget;
 import com.sean.domain.macro.DailyMacroTargetRequest;
 import com.sean.domain.macro.DailyMacroTargetRuleNotFoundException;
-import com.sean.domain.macro.DailyMacroTargetService;
+import com.sean.domain.macro.DailyMacroTargetWithRecommendedFoods;
+import com.sean.domain.macro.DailyMacroTargetWithRecommendedFoodsService;
 import com.sean.domain.macro.Gender;
 import com.sean.domain.macro.MacroRange;
+import com.sean.domain.macro.RecommendedFood;
 import com.sean.domain.macro.TrainingLevel;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,9 +24,9 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/daily-macro-target")
 public class DailyMacroTargetController {
 
-    private final DailyMacroTargetService service;
+    private final DailyMacroTargetWithRecommendedFoodsService service;
 
-    public DailyMacroTargetController(DailyMacroTargetService service) {
+    public DailyMacroTargetController(DailyMacroTargetWithRecommendedFoodsService service) {
         this.service = service;
     }
 
@@ -33,17 +37,20 @@ public class DailyMacroTargetController {
      * @param gender 性别，只能是 male 或 female
      * @param trainingLevel 每周训练时长档位，取值 1～5：1=0～1h，2=2～3h，
      *                      3=4～5h，4=6～7h，5=8～9h及以上；对应数据库分钟区间下限
+     * @param country 国家 ISO 两位码；国家未启用、未配置推荐食物或未传入时使用 US
      */
     @GetMapping
     public DailyMacroTargetResponse calculate(
             @RequestParam("weightKg") BigDecimal weightKg,
             @RequestParam("gender") String gender,
-            @RequestParam("trainingLevel") int trainingLevel) {
+            @RequestParam("trainingLevel") int trainingLevel,
+            @RequestParam(value = "country", required = false) String country) {
         try {
             TrainingLevel level = TrainingLevel.fromValue(trainingLevel);
-            DailyMacroTarget target = service.calculate(new DailyMacroTargetRequest(
-                    Gender.fromValue(gender), weightKg, level.getWeeklyTrainingMinutesStart()));
-            return DailyMacroTargetResponse.from(target);
+            DailyMacroTargetWithRecommendedFoods result = service.calculate(new DailyMacroTargetRequest(
+                    Gender.fromValue(gender), weightKg, level.getWeeklyTrainingMinutesStart()),
+                    country);
+            return DailyMacroTargetResponse.from(result);
         } catch (DailyMacroTargetRuleNotFoundException exception) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, exception.getMessage(), exception);
         } catch (IllegalArgumentException exception) {
@@ -55,13 +62,17 @@ public class DailyMacroTargetController {
     public record DailyMacroTargetResponse(
             MacroRangeResponse proteinG,
             MacroRangeResponse carbsG,
-            MacroRangeResponse fatG) {
+            MacroRangeResponse fatG,
+            RecommendedFoodsResponse recommendedFoods) {
 
-        private static DailyMacroTargetResponse from(DailyMacroTarget target) {
+        private static DailyMacroTargetResponse from(
+                DailyMacroTargetWithRecommendedFoods result) {
+            DailyMacroTarget target = result.target();
             return new DailyMacroTargetResponse(
                     MacroRangeResponse.from(target.proteinG()),
                     MacroRangeResponse.from(target.carbsG()),
-                    MacroRangeResponse.from(target.fatG()));
+                    MacroRangeResponse.from(target.fatG()),
+                    RecommendedFoodsResponse.from(result));
         }
     }
 
@@ -70,6 +81,53 @@ public class DailyMacroTargetController {
 
         private static MacroRangeResponse from(MacroRange range) {
             return new MacroRangeResponse(range.min(), range.max());
+        }
+    }
+
+    /** 每日宏量目标页面使用的国家食物推荐；每个宏量栏目随机返回三项。 */
+    public record RecommendedFoodsResponse(
+            String countryCode,
+            List<FoodResponse> protein,
+            List<FoodResponse> carbs,
+            List<FoodResponse> fat) {
+
+        private static RecommendedFoodsResponse from(DailyMacroTargetWithRecommendedFoods result) {
+            return new RecommendedFoodsResponse(
+                    result.countryCode(),
+                    result.proteinFoods().stream().map(FoodResponse::from).toList(),
+                    result.carbsFoods().stream().map(FoodResponse::from).toList(),
+                    result.fatFoods().stream().map(FoodResponse::from).toList());
+        }
+    }
+
+    /** 前端展示的单项食物及其每 100g 营养数值。 */
+    public record FoodResponse(
+            UUID id,
+            String slug,
+            String displayName,
+            String nameEn,
+            String nameZh,
+            String foodGroup,
+            BigDecimal proteinG,
+            BigDecimal carbsG,
+            BigDecimal fatG,
+            BigDecimal energyKcal) {
+
+        private static FoodResponse from(RecommendedFood food) {
+            String displayName = food.nameZh() == null || food.nameZh().isBlank()
+                    ? food.nameEn()
+                    : food.nameZh();
+            return new FoodResponse(
+                    food.id(),
+                    food.slug(),
+                    displayName,
+                    food.nameEn(),
+                    food.nameZh(),
+                    food.foodGroup(),
+                    food.proteinG(),
+                    food.carbsG(),
+                    food.fatG(),
+                    food.energyKcal());
         }
     }
 }
