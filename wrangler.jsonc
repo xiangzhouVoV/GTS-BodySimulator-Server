@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "gts-bodysimulator-server",
+  "name": "body-simulator-api",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-09-09",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -8,12 +8,6 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
-  "services": [
-    {
-      "binding": "WORKER_SELF_REFERENCE",
-      "service": "gts-bodysimulator-server"
-    }
-  ],
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
