@@ -79,10 +79,12 @@ npm run dev
    `REPLACE_WITH_YOUR_HYPERDRIVE_ID`。绑定名称必须保持为 `HYPERDRIVE`。
 4. 将 Git 仓库接入 Cloudflare Workers Builds，生产分支选
    `codex/nextjs-api`。构建命令为 `npm run build:cloudflare`，部署命令为
-   `npx wrangler deploy`；或在已登录 Cloudflare 的本地终端运行：
+   `npm run deploy:cloudflare:ci`。不要在 Workers Builds 中直接使用
+   `npx wrangler deploy`，因为 OpenNext 会拦截该命令并启动本地 Hyperdrive 代理。
+   或在已登录 Cloudflare 的本地终端运行：
 
    ```bash
-   npm run deploy:cloudflare
+   npm run deploy:cloudflare:ci
    ```
 
 5. 部署后检查：
