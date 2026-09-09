@@ -1,8 +1,12 @@
-import { Pool, type PoolConfig } from "pg";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { Client, Pool, type PoolConfig } from "pg";
 
 declare global {
   var bodySimulatorPool: Pool | undefined;
 }
+
+export type Database = Pick<Pool, "query">;
+type HyperdriveBinding = { connectionString: string };
 
 function databaseUrl(): string {
   if (process.env.DATABASE_URL) {
@@ -42,13 +46,48 @@ function createPool(): Pool {
   return new Pool(config);
 }
 
+function hyperdriveConnectionString(): string | undefined {
+  try {
+    const { env } = getCloudflareContext();
+    return (env as unknown as { HYPERDRIVE?: HyperdriveBinding }).HYPERDRIVE?.connectionString;
+  } catch {
+    // The OpenNext binding context only exists when code runs in a Worker.
+    return undefined;
+  }
+}
+
 /**
  * Creates the connection pool lazily. Next.js evaluates route modules while it
  * builds the application, when deployment secrets are intentionally absent.
  */
-export function getDatabase(): Pool {
+function getNodeDatabase(): Pool {
   if (!global.bodySimulatorPool) {
     global.bodySimulatorPool = createPool();
   }
   return global.bodySimulatorPool;
+}
+
+/**
+ * Runs a query callback using the platform-appropriate Postgres connection.
+ *
+ * On Cloudflare Workers a client is created for each request with Hyperdrive's
+ * binding. Hyperdrive owns the real connection pool, so the short-lived
+ * client is intentional. Local development, Dokploy, and Vercel retain their
+ * shared Node.js pool.
+ */
+export async function withDatabase<T>(
+  operation: (database: Database) => Promise<T>,
+): Promise<T> {
+  const connectionString = hyperdriveConnectionString();
+  if (!connectionString) {
+    return operation(getNodeDatabase());
+  }
+
+  const client = new Client({ connectionString });
+  await client.connect();
+  try {
+    return await operation(client);
+  } finally {
+    await client.end();
+  }
 }

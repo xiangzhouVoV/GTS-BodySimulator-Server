@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getDatabase } from "@/lib/database";
+import { withDatabase } from "@/lib/database";
 import { errorResponse } from "@/lib/http";
 
 export const runtime = "nodejs";
@@ -15,16 +15,16 @@ type CountryRow = {
 
 export async function GET(): Promise<NextResponse> {
   try {
-    const { rows } = await getDatabase().query<CountryRow>(`
-      SELECT
-        country_code AS "code",
-        name_en AS "nameEn",
-        name_local AS "nameLocal",
-        locale
-      FROM public.countries
-      WHERE is_active = TRUE
-      ORDER BY name_en ASC
-    `);
+    const { rows } = await withDatabase((database) => database.query<CountryRow>(`
+        SELECT
+          country_code AS "code",
+          name_en AS "nameEn",
+          name_local AS "nameLocal",
+          locale
+        FROM public.countries
+        WHERE is_active = TRUE
+        ORDER BY name_en ASC
+      `));
 
     return NextResponse.json(
       rows.map((country) => ({

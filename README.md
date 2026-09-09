@@ -61,6 +61,42 @@ npm ci
 npm run dev
 ```
 
+## 部署到 Cloudflare Workers
+
+本项目使用 **OpenNext + Cloudflare Hyperdrive**。Hyperdrive 在 Cloudflare
+侧维护 PostgreSQL 连接池，因此 Worker 内不配置 `SUPABASE_DB_*`、
+`DATABASE_URL` 或数据库密码。
+
+1. 在 Supabase 的 Connect 页面复制 **Direct connection** URL。不要使用
+   Session Pooler（`5432`）或 Transaction Pooler（`6543`）；Hyperdrive 已经
+   负责连接池。
+2. 在 Cloudflare Dashboard → Workers & Pages → **Hyperdrive** 创建配置，粘贴
+   Direct connection URL。建议为 Hyperdrive 创建只读数据库账号，只有
+   `countries`、`foods`、`country_food_recommendations` 和
+   `daily_macro_target_rules` 的 `SELECT` 权限。
+3. 复制创建完成后的 Hyperdrive ID，替换
+   [`wrangler.jsonc`](./wrangler.jsonc) 中的
+   `REPLACE_WITH_YOUR_HYPERDRIVE_ID`。绑定名称必须保持为 `HYPERDRIVE`。
+4. 将 Git 仓库接入 Cloudflare Workers Builds，生产分支选
+   `codex/nextjs-api`。构建命令为 `npm run build:cloudflare`，部署命令为
+   `npx wrangler deploy`；或在已登录 Cloudflare 的本地终端运行：
+
+   ```bash
+   npm run deploy:cloudflare
+   ```
+
+5. 部署后检查：
+
+   ```text
+   https://<your-worker-domain>/api/health
+   https://<your-worker-domain>/api/countries
+   https://<your-worker-domain>/api/daily-macro-target?weightKg=85&gender=male&trainingLevel=3&country=CN
+   ```
+
+`npm run preview:cloudflare` 可在本地用 Workers runtime 预览；需要真实
+Hyperdrive 连接时使用 Cloudflare 的远程预览。不要将 Direct connection URL 或
+数据库密码提交到仓库。
+
 ## 部署到 Vercel
 
 Vercel 会自动识别 Next.js 项目，不需要使用本仓库的 Dockerfile。创建项目时

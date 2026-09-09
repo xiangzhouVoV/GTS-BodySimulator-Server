@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getDatabase } from "@/lib/database";
+import { type Database, withDatabase } from "@/lib/database";
 import { errorResponse } from "@/lib/http";
 import { parseMacroRequest, scaleForWeight } from "@/lib/macro";
 
@@ -43,8 +43,12 @@ type FoodResponse = Omit<FoodRow, "nameZh" | "proteinG" | "carbsG" | "fatG" | "e
   energyKcal: number;
 };
 
-async function findRule(gender: "male" | "female", weeklyTrainingMinutes: number) {
-  const { rows } = await getDatabase().query<RuleRow>(
+async function findRule(
+  database: Database,
+  gender: "male" | "female",
+  weeklyTrainingMinutes: number,
+) {
+  const { rows } = await database.query<RuleRow>(
     `
       SELECT
         protein_g_min::text AS "proteinMin",
@@ -64,8 +68,12 @@ async function findRule(gender: "male" | "female", weeklyTrainingMinutes: number
   return rows[0];
 }
 
-async function recommendedFoods(countryCode: string, macroRole: MacroRole): Promise<FoodResponse[]> {
-  const { rows } = await getDatabase().query<FoodRow>(
+async function recommendedFoods(
+  database: Database,
+  countryCode: string,
+  macroRole: MacroRole,
+): Promise<FoodResponse[]> {
+  const { rows } = await database.query<FoodRow>(
     `
       SELECT
         food.id::text AS "id",
@@ -99,9 +107,9 @@ async function recommendedFoods(countryCode: string, macroRole: MacroRole): Prom
   }));
 }
 
-async function findAllRecommendedFoods(countryCode: string) {
+async function findAllRecommendedFoods(database: Database, countryCode: string) {
   const [protein, carbs, fat] = await Promise.all(
-    MACRO_ROLES.map((role) => recommendedFoods(countryCode, role)),
+    MACRO_ROLES.map((role) => recommendedFoods(database, countryCode, role)),
   );
   return { protein, carbs, fat };
 }
@@ -119,39 +127,41 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const [rule, requestedFoods] = await Promise.all([
-      findRule(input.gender, input.weeklyTrainingMinutes),
-      findAllRecommendedFoods(input.countryCode),
-    ]);
+    return await withDatabase(async (database) => {
+      const [rule, requestedFoods] = await Promise.all([
+        findRule(database, input.gender, input.weeklyTrainingMinutes),
+        findAllRecommendedFoods(database, input.countryCode),
+      ]);
 
-    if (!rule) {
-      return errorResponse("No daily macro target rule matches this request", 422);
-    }
+      if (!rule) {
+        return errorResponse("No daily macro target rule matches this request", 422);
+      }
 
-    const countryCode = areRecommendationsComplete(requestedFoods)
-      ? input.countryCode
-      : DEFAULT_COUNTRY_CODE;
-    const foods = countryCode === input.countryCode
-      ? requestedFoods
-      : await findAllRecommendedFoods(countryCode);
+      const countryCode = areRecommendationsComplete(requestedFoods)
+        ? input.countryCode
+        : DEFAULT_COUNTRY_CODE;
+      const foods = countryCode === input.countryCode
+        ? requestedFoods
+        : await findAllRecommendedFoods(database, countryCode);
 
-    return NextResponse.json({
-      proteinG: {
-        min: scaleForWeight(rule.proteinMin, input.weightKg),
-        max: scaleForWeight(rule.proteinMax, input.weightKg),
-      },
-      carbsG: {
-        min: scaleForWeight(rule.carbsMin, input.weightKg),
-        max: scaleForWeight(rule.carbsMax, input.weightKg),
-      },
-      fatG: {
-        min: scaleForWeight(rule.fatMin, input.weightKg),
-        max: scaleForWeight(rule.fatMax, input.weightKg),
-      },
-      recommendedFoods: {
-        countryCode,
-        ...foods,
-      },
+      return NextResponse.json({
+        proteinG: {
+          min: scaleForWeight(rule.proteinMin, input.weightKg),
+          max: scaleForWeight(rule.proteinMax, input.weightKg),
+        },
+        carbsG: {
+          min: scaleForWeight(rule.carbsMin, input.weightKg),
+          max: scaleForWeight(rule.carbsMax, input.weightKg),
+        },
+        fatG: {
+          min: scaleForWeight(rule.fatMin, input.weightKg),
+          max: scaleForWeight(rule.fatMax, input.weightKg),
+        },
+        recommendedFoods: {
+          countryCode,
+          ...foods,
+        },
+      });
     });
   } catch (error) {
     console.error("Unable to calculate daily macro target", error);

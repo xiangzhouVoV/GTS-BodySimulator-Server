@@ -5,6 +5,8 @@
 # Next.js / Node.js build output and dependencies
 node_modules/
 .next/
+.open-next/
+cloudflare-env.d.ts
 *.tsbuildinfo
 
 # Editor configuration
